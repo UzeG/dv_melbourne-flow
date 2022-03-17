@@ -10,7 +10,7 @@ new Promise((resolve, reject) => {
         }
     }
 }).then(res => {
-    let resArr = res.split('\r\n');
+    let resArr = res.split('\n');
     let keyNameArr = resArr[0].split(',');
 
     for (let i = 1; i < resArr.length - 1; i++) {  // 剔除掉 resArr 中最后一个
