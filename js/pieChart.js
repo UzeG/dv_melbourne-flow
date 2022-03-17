@@ -8,7 +8,6 @@ let dataIndex = 0;
 
 let total = 0;
 function setup() {
-    console.log(1);
     createCanvas(720, 720);
     background(224);
 
