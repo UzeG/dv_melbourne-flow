@@ -1,22 +1,24 @@
-const data = JSON.parse(localStorage.getItem('data'));
+let data = JSON.parse(localStorage.getItem('data'));
+let dateIndex = 0;
+let regionNames;
+let regionIndex = 0;
 
-let diameter;  // 扇形半径
-let palette_size = { w: 0, h: 0 };
-let palette = [];
+let axis_size;
+let axis_pos;
 
-let dataIndex = 0;
+let axis_x_line_length = 5;
 
-let total = 0;
+
 function setup() {
-    createCanvas(720, 720);
+    createCanvas(840, 640);
     background(224);
 
+    axis_size = { w: width * .8, h: height * .8 };
+    axis_pos = { x: width * .5, y: height * .5 };
 
-    diameter = Math.min(width, height) / 5 * 2.5;
-    total = getTotal(dataIndex);
-    palette = initPalette(Object.keys(data[dataIndex].regionInfo).length);
-    palette_size.w = width / 18;
-    palette_size.h = height / 48;
+    data = processData();
+    console.log(data);
+    regionNames = Object.keys(data[0].regionInfo);
 }
 
 function draw() {
@@ -31,120 +33,171 @@ function draw() {
 
 
     /* 画图功能实现 */
-
+    
     // 画标题
     drawTitle();
 
-    // 画扇形  arc--3点钟方向开始计算，顺时针为+
-    drawChart();
+    // 画坐标轴、参照线
+    drawAxis();
 
-    // 调色板
-    drawPalette();
+    // 画数据
+    drawPointLine(dateIndex, regionIndex);
 }
 
+
+/* 处理数据为如下格式 */
+// let arr = [
+//     {
+//         date: xx年xx月xx日
+//         regionInfo: {
+//             xxx地区名: [零点人流, 一点人流, ...],
+//             xxx地区名:...
+//         }
+//     }
+// ]
+const processData = () => {
+    let newData = [];
+    let hour = 0;
+    data.forEach(hourData => {
+        if (!hourData.timeInfo) {
+            console.log(newData);
+        }
+        if (hour == 0) {
+            newData.push({
+                date: { Year: hourData.timeInfo.Year, Month: hourData.timeInfo.Month, Mdate: hourData.timeInfo.Mdate },
+                regionInfo: {}
+            });
+            for (const regionName in hourData.regionInfo) {
+                if (Object.hasOwnProperty.call(hourData.regionInfo, regionName)) {
+                    newData[newData.length - 1].regionInfo[regionName] = [];
+                }
+            }
+        }
+        for (const regionName in hourData.regionInfo) {
+            if (Object.hasOwnProperty.call(hourData.regionInfo, regionName)) {
+                newData[newData.length - 1].regionInfo[regionName].push(hourData.regionInfo[regionName]);
+            }
+        }
+
+        hour++;
+        if (hour == 24) hour = 0;
+    })
+
+    return newData;
+}
+
+function keyPressed() {
+    if (key == ']') {
+        dateIndex++;
+        regularizeDateIndex();
+    } else if(key == '[') {
+        dateIndex--;
+        regularizeDateIndex();
+    } else if (key == '=') {
+        regionIndex++;
+        regularizeRegionIndex();
+    } else if (key == '-') {
+        regionIndex--;
+        regularizeRegionIndex();
+    }
+}
+
+const regularizeDateIndex = () => {
+    if (dateIndex >= data.length) dateIndex = 0;
+    else if (dateIndex < 0) dateIndex = data.length - 1;
+}
+const regularizeRegionIndex = () => {
+    if (regionIndex >= regionNames.length) regionIndex = 0;
+    else if (regionIndex < 0) regionIndex = regionNames.length - 1;
+}
+
+
+/* 画坐标轴、参照线 */
+const drawAxis = () => {
+    fill(255);
+    stroke(255);
+    strokeWeight(2);
+    rectMode(CENTER);
+
+    // 主图区
+    rect(axis_pos.x, axis_pos.y, axis_size.w, axis_size.h);
+
+    // x 轴刻度
+    for (let i = 0; i < 24; i++) {
+        stroke(150);
+        strokeWeight(2);
+        line(axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i, axis_pos.y + axis_size.h / 2,
+            axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i, axis_pos.y + axis_size.h / 2 + axis_x_line_length);
+
+        // x 轴信息
+        fill(100)
+        stroke(100);
+        strokeWeight(.1);
+        textSize(12);
+        rectMode(RADIUS);
+        text(i,
+            axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i - 4, axis_pos.y + axis_size.h / 2 + 10,
+            20, 20)
+    }
+
+}
+
+/* 画标题 */
 const drawTitle = () => {
     noStroke();
     fill(0);
 
-    textSize(35);
-    text(generateTitle(data[dataIndex].timeInfo),
+    textSize(20);
+    text(generateTitle(dateIndex, regionIndex),
         width / 10, height / 23,
-        width * 2 / 3, width * 2 / 3 / 5);
+        width * .9, height * .1);
 }
 
-const drawChart = () => {
-    stroke(50);
-    strokeWeight(2);
+const axisVertical = 0.98;
+const ellipseRadius = 5;
+/* 根据数据生成点和线 */
+const drawPointLine = (dateIndex, regionIndex) => {
+    const rInfo = data[dateIndex].regionInfo[regionNames[regionIndex]];
+    let maxNum = Math.max(...rInfo);
+    // let minNum = Math.min(...rInfo);
+    let maxY = (Math.ceil(maxNum / 100) + 1) * 100;
 
-    let currentStart = -PI / 2;  // 扇形起始
-    let currentEnd = 0;  // 扇形终点
-    let currentRadian = 0;  // 扇形弧度
-    let paletteNo = 0;
-    for (const key in data[dataIndex].regionInfo) {
-        if (Object.hasOwnProperty.call(data[dataIndex].regionInfo, key)) {
-            currentRadian = data[dataIndex].regionInfo[key] / total * 2 * PI;
-            currentEnd = currentStart + currentRadian;
-
-            // 扇形
-            fill(palette[paletteNo].r, palette[paletteNo].g, palette[paletteNo].b);
-            arc(width / 2, height / 2.7,
-                diameter, diameter,
-                currentStart, currentEnd,
-                PIE);
-
-            currentStart = currentEnd;
-        }
-        paletteNo++;
-    }
-}
-
-const drawPalette = () => {
-    for (let i = 0; i < Object.keys(data[dataIndex].regionInfo).length; i++) {
-        // 调色板框框
-        fill(palette[i].r, palette[i].g, palette[i].b);
-        stroke(2);
+    // y 轴刻度
+    for (let i = 0; i < 10; i++) {
+        stroke(230, 230, 240);
         strokeWeight(1);
+        line(axis_pos.x - axis_size.w / 2, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / 10 * (i + 1),
+            axis_pos.x + axis_size.w / 2, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / 10 * (i + 1));
 
-        rect(Math.floor(i / 6) * width / 4 + width / 8, (i % 6) * height / 20 + width * 41 / 60,
-            palette_size.w, palette_size.h);
-
-        // 调色板标题
-        fill(0);
-        noStroke();
-
-        textSize(12)
-        text(Object.keys(data[dataIndex].regionInfo)[i],
-            Math.floor(i / 6) * width / 4 + width / 8 + palette_size.w + 5, (i % 6) * height / 20 + width * 41 / 60,
-            140, 100)
+        // y 轴信息
+        fill(100)
+        stroke(100);
+        strokeWeight(.1);
+        textSize(12);
+        rectMode(RADIUS);
+        text(maxY / 10 * (i + 1),
+            axis_pos.x - axis_size.w / 2 - 32, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / 10 * (i + 1) - 5,
+            50, 20)
     }
-}
 
-const getTotal = dataIndex => {
-    let total = 0;
-    for (const key in data[dataIndex].regionInfo) {
-        if (Object.hasOwnProperty.call(data[dataIndex].regionInfo, key)) {
-            total += data[dataIndex].regionInfo[key];
+    for (let i = 0; i < rInfo.length; i++) {
+        // 画点
+        noFill();
+        stroke(80, 110, 200);
+        strokeWeight(2);
+        ellipse(axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i, axis_pos.y + axis_size.h / 2 - rInfo[i] / maxY * (axis_size.h * axisVertical),
+            ellipseRadius);
+
+        // 连线
+        if (i > 0) {
+            strokeWeight(1);
+            line(axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * (i - 1), axis_pos.y + axis_size.h / 2 - rInfo[(i - 1)] / maxY * (axis_size.h * axisVertical),
+                axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i, axis_pos.y + axis_size.h / 2 - rInfo[i] / maxY * (axis_size.h * axisVertical))
         }
     }
-    return total;
-}
-
-
-/* 键盘交互 */
-function keyPressed() {
-    // 通过 '[', ']' 调整当前显示的数据
-    if (key == ']') {
-        dataIndex++;
-        regularizeDataIndex();
-        total = getTotal(dataIndex);
-    }
-    else if (key == '[') {
-        dataIndex--;
-        regularizeDataIndex();
-        total = getTotal(dataIndex);
-    }
-    else if (key == 'c') {
-        palette = initPalette(Object.keys(data[dataIndex].regionInfo).length);
-    }
-}
-
-/* 防止数组下标越界 */
-const regularizeDataIndex = () => {
-    if (dataIndex >= data.length) dataIndex = 0;
-    else if (dataIndex < 0) dataIndex = data.length - 1;
-}
-
-/* 随机调色板 */
-const initPalette = len => {
-    let palette = [];
-    for (let i = 0; i < len; i++) {
-        let color = { r: Math.random() * 255, g: Math.random() * 255, b: Math.random() * 255 };
-        palette.push(color);
-    }
-    return palette;
 }
 
 /* 生成标题 */
-const generateTitle = timeInfo => {
-    return `墨尔本${timeInfo.Year}年${timeInfo.Month}月${timeInfo.Mdate}日${timeInfo.Hour}时人流统计图`;
+const generateTitle = (dateIndex, regionIndex) => {
+    return `墨尔本${regionNames[regionIndex]}地区${data[dateIndex].date.Year}年${data[dateIndex].date.Month}月${data[dateIndex].date.Mdate}日人流变化统计图`;
 }

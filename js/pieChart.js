@@ -49,7 +49,7 @@ const drawTitle = () => {
     textSize(35);
     text(generateTitle(data[dataIndex].timeInfo),
         width / 10, height / 23,
-        width * 2 / 3, width * 2 / 3 / 5);
+        width * 2 / 3, height * .1);
 }
 
 const drawChart = () => {
