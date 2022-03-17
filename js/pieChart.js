@@ -1,3 +1,5 @@
+const data = JSON.parse(localStorage.getItem('data'));
+
 let diameter;  // 扇形半径
 let palette_size = { w: 0, h: 0 };
 let palette = [];
@@ -6,6 +8,7 @@ let dataIndex = 0;
 
 let total = 0;
 function setup() {
+    console.log(1);
     createCanvas(720, 720);
     background(224);
 

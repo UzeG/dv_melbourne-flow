@@ -22,4 +22,8 @@ new Promise((resolve, reject) => {
         }
         data.push(dataObj);
     }
+
+    localStorage.setItem('data', JSON.stringify(data));
 })
+
+console.log('p5.js 既不能 import 又不能异步引入自己的代码，我真是服了啊啊啊啊啊!!!');
