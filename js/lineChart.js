@@ -157,8 +157,8 @@ const drawAxis = () => {
 }
 
 /* 根据数据生成点和线 */
-const axisVertical = 0.98;
-const ellipseRadius = 5;
+const axisVertical = 0.98;  // 横轴占比
+const ellipseRadius = 5;  // 原点直径
 const subsectionNum = 10;  // y 轴分段数
 const drawPointLine = (dateIndex, regionIndex) => {
     const rInfo = data[dateIndex].regionInfo[regionNames[regionIndex]];

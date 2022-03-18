@@ -74,7 +74,7 @@ const drawAxis = () => {
 
 /* 根据数据生成坐标尺度、直方 */
 const regionInterval = 6;  // 直方之间的间距
-const axisHorizontal = 0.98;
+const axisHorizontal = 0.98;  // 纵轴占比
 const subsectionNum = 10;  // x 轴分段数
 const drawScaleSquare = dataIndex => {
     const rInfo = data[dataIndex].regionInfo;
