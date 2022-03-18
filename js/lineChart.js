@@ -10,14 +10,13 @@ let axis_x_line_length = 5;
 
 
 function setup() {
-    createCanvas(840, 640);
+    createCanvas(700, 533);
     background(224);
 
     axis_size = { w: width * .8, h: height * .8 };
     axis_pos = { x: width * .5, y: height * .5 };
 
     data = processData();
-    console.log(data);
     regionNames = Object.keys(data[0].regionInfo);
 }
 
@@ -33,7 +32,7 @@ function draw() {
 
 
     /* 画图功能实现 */
-    
+
     // 画标题
     drawTitle();
 
@@ -90,7 +89,7 @@ function keyPressed() {
     if (key == ']') {
         dateIndex++;
         regularizeDateIndex();
-    } else if(key == '[') {
+    } else if (key == '[') {
         dateIndex--;
         regularizeDateIndex();
     } else if (key == '=') {
@@ -112,19 +111,34 @@ const regularizeRegionIndex = () => {
 }
 
 
+/* 画标题 */
+const drawTitle = () => {
+    noStroke();
+    fill(0);
+
+    textSize(18);
+    text(generateTitle(dateIndex, regionIndex),
+        width / 10, height / 23,
+        width * .9, height * .1);
+}
+
 /* 画坐标轴、参照线 */
 const drawAxis = () => {
     fill(255);
     stroke(255);
-    strokeWeight(2);
+    strokeWeight(0);
     rectMode(CENTER);
 
     // 主图区
     rect(axis_pos.x, axis_pos.y, axis_size.w, axis_size.h);
 
     // x 轴刻度
+    stroke(100);
+    strokeWeight(2);
+    line(axis_pos.x - axis_size.w / 2, axis_pos.y + axis_size.h / 2,
+        axis_pos.x + axis_size.w / 2, axis_pos.y + axis_size.h / 2)
     for (let i = 0; i < 24; i++) {
-        stroke(150);
+        stroke(100);
         strokeWeight(2);
         line(axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i, axis_pos.y + axis_size.h / 2,
             axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i, axis_pos.y + axis_size.h / 2 + axis_x_line_length);
@@ -133,29 +147,19 @@ const drawAxis = () => {
         fill(100)
         stroke(100);
         strokeWeight(.1);
-        textSize(12);
+        textSize(10);
         rectMode(RADIUS);
         text(i,
             axis_pos.x - axis_size.w / 2 + axis_size.w / 23 * i - 4, axis_pos.y + axis_size.h / 2 + 10,
-            20, 20)
+            20, 20);
     }
 
 }
 
-/* 画标题 */
-const drawTitle = () => {
-    noStroke();
-    fill(0);
-
-    textSize(20);
-    text(generateTitle(dateIndex, regionIndex),
-        width / 10, height / 23,
-        width * .9, height * .1);
-}
-
+/* 根据数据生成点和线 */
 const axisVertical = 0.98;
 const ellipseRadius = 5;
-/* 根据数据生成点和线 */
+const subsectionNum = 10;  // y 轴分段数
 const drawPointLine = (dateIndex, regionIndex) => {
     const rInfo = data[dateIndex].regionInfo[regionNames[regionIndex]];
     let maxNum = Math.max(...rInfo);
@@ -163,11 +167,13 @@ const drawPointLine = (dateIndex, regionIndex) => {
     let maxY = (Math.ceil(maxNum / 100) + 1) * 100;
 
     // y 轴刻度
-    for (let i = 0; i < 10; i++) {
-        stroke(230, 230, 240);
-        strokeWeight(1);
-        line(axis_pos.x - axis_size.w / 2, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / 10 * (i + 1),
-            axis_pos.x + axis_size.w / 2, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / 10 * (i + 1));
+    for (let i = 0; i <= subsectionNum; i++) {
+        if (i > 0) {
+            stroke(230, 230, 240);
+            strokeWeight(1);
+            line(axis_pos.x - axis_size.w / 2, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / subsectionNum * i,
+                axis_pos.x + axis_size.w / 2, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / subsectionNum * i);
+        }
 
         // y 轴信息
         fill(100)
@@ -175,8 +181,8 @@ const drawPointLine = (dateIndex, regionIndex) => {
         strokeWeight(.1);
         textSize(12);
         rectMode(RADIUS);
-        text(maxY / 10 * (i + 1),
-            axis_pos.x - axis_size.w / 2 - 32, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / 10 * (i + 1) - 5,
+        text(maxY / subsectionNum * i,
+            axis_pos.x - axis_size.w / 2 - 32, axis_pos.y + axis_size.h / 2 - (axis_size.h * axisVertical) / subsectionNum * i - 5,
             50, 20)
     }
 

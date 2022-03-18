@@ -8,7 +8,7 @@ let dataIndex = 0;
 
 let total = 0;
 function setup() {
-    createCanvas(720, 720);
+    createCanvas(600, 600);
     background(224);
 
 
@@ -46,9 +46,9 @@ const drawTitle = () => {
     noStroke();
     fill(0);
 
-    textSize(35);
+    textSize(28);
     text(generateTitle(data[dataIndex].timeInfo),
-        width / 10, height / 23,
+        width / 10, height / 21,
         width * 2 / 3, height * .1);
 }
 
@@ -85,17 +85,17 @@ const drawPalette = () => {
         stroke(2);
         strokeWeight(1);
 
-        rect(Math.floor(i / 6) * width / 4 + width / 8, (i % 6) * height / 20 + width * 41 / 60,
+        rect(Math.floor(i / 6) * width / 3.7 + width / 8, (i % 6) * height / 20 + width * 41 / 60,
             palette_size.w, palette_size.h);
 
         // 调色板标题
         fill(0);
         noStroke();
 
-        textSize(12)
+        textSize(10)
         text(Object.keys(data[dataIndex].regionInfo)[i],
-            Math.floor(i / 6) * width / 4 + width / 8 + palette_size.w + 5, (i % 6) * height / 20 + width * 41 / 60,
-            140, 100)
+            Math.floor(i / 6) * width / 3.7 + width / 8 + palette_size.w + 3, (i % 6) * height / 20 + width * 0.686,
+            150, 100)
     }
 }
 
