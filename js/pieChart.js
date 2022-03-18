@@ -17,6 +17,9 @@ function setup() {
     palette = initPalette(Object.keys(data[dataIndex].regionInfo).length);
     palette_size.w = width / 18;
     palette_size.h = height / 48;
+
+    // 操作提示
+    alert("'[' ']'键切换时间，空格键随机调色板");
 }
 
 function draw() {
@@ -123,7 +126,7 @@ function keyPressed() {
         regularizeDataIndex();
         total = getTotal(dataIndex);
     }
-    else if (key == 'c') {
+    else if (key == ' ') {
         palette = initPalette(Object.keys(data[dataIndex].regionInfo).length);
     }
 }

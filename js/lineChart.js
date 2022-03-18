@@ -18,6 +18,9 @@ function setup() {
 
     data = processData();
     regionNames = Object.keys(data[0].regionInfo);
+
+    // 操作提示
+    alert("'[' ']'键切换时间，'-' '+'键切换地区");
 }
 
 function draw() {
@@ -58,9 +61,6 @@ const processData = () => {
     let newData = [];
     let hour = 0;
     data.forEach(hourData => {
-        if (!hourData.timeInfo) {
-            console.log(newData);
-        }
         if (hour == 0) {
             newData.push({
                 date: { Year: hourData.timeInfo.Year, Month: hourData.timeInfo.Month, Mdate: hourData.timeInfo.Mdate },

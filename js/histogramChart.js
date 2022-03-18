@@ -1,5 +1,4 @@
 const data = JSON.parse(localStorage.getItem('data'));
-console.log(data);
 let dataIndex = 0;
 
 const regionNames = Object.keys(data[0].regionInfo);
@@ -17,6 +16,9 @@ function setup() {
 
     axis_size = { w: width * .8, h: height * .85 };
     axis_pos = { x: width * .5 - axis_size.w / 2 + axis_size.w / 15, y: height * .5 - axis_size.h / 2 };
+
+    // 操作提示
+    alert("'[' ']'键切换时间，空格键切换默认显示&排序显示");
 }
 
 function draw() {
